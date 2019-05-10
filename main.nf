@@ -8,8 +8,8 @@ min_identity_ch = Channel.from( 100, 90, 80, 70, 60, 50 )
 // Fetch the list of host-associated studies from ENA
 process fetchHostAssociatedStudies {
   container "quay.io/fhcrc-microbiome/python-pandas@sha256:39993ba37c44368d1a5752cf6b96f8172e69eb109374722bd6914c29a79565c6"
-  cpus 1
-  memory "1 GB"
+  cpus 2
+  memory "4 GB"
   
   input:
   val biome_name from params.biome_name
