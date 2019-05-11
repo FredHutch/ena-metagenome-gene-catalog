@@ -188,13 +188,10 @@ for assembly_url in open("${assembly_url_list}").readlines():
     print("Processing " + assembly_url)
 
     # Get available analyses
-    break_out = False
     for analysis in get_all(assembly_url):
 
         analysis_id = parse_json(analysis, ["id"])
 
-        if break_out:
-            break
         download_url = parse_json(analysis, ["relationships", "downloads", "links", "related"])
 
         for download in get_all(download_url):
@@ -205,8 +202,6 @@ for assembly_url in open("${assembly_url_list}").readlines():
                 filename = analysis_id + ".CDS.unannotated.faa.gz"
 
                 download_file(faa_url, filename)
-                if break_out:
-                    break
 
   """
 
