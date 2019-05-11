@@ -110,6 +110,7 @@ process fetchCDS {
   container "quay.io/fhcrc-microbiome/python-pandas@sha256:39993ba37c44368d1a5752cf6b96f8172e69eb109374722bd6914c29a79565c6"
   cpus 1
   memory "1 GB"
+  errorStrategy 'retry'
   
   input:
   file assembly_url_list from groups_of_assemblies.flatten()
@@ -187,6 +188,7 @@ process deduplicateCDS {
     container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
     cpus 2
     memory "4 GB"
+    errorStrategy 'retry'
 
     input:
     file "*" from cds_ch
@@ -227,6 +229,7 @@ process combineCDS {
     container "ubuntu:16.04"
     cpus 1
     memory "8 GB"
+    errorStrategy 'retry'
     
     input:
     file "*" from dedup_ch.collect()
@@ -247,6 +250,7 @@ process clusterCDS {
     cpus 4
     memory "8 GB"
     publishDir "${params.output_folder}"
+    errorStrategy 'retry'
     
     input:
     file all_cds
