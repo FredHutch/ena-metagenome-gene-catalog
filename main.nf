@@ -212,7 +212,7 @@ for assembly_url in open("${assembly_url_list}").readlines():
 process deduplicateCDS {
     container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
     cpus 4
-    memory "32 GB"
+    memory "30 GB"
     errorStrategy 'retry'
 
     input:
