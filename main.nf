@@ -5,8 +5,8 @@ params.min_coverage = 50
 params.output_folder = "./"
 min_identity_ch = Channel.from( 100, 90, 80, 70, 60, 50 )
 
-// Fetch the list of host-associated studies from ENA
-process fetchHostAssociatedStudies {
+// Fetch the number of pages of host-associated studies from ENA
+process pagesHostAssociatedStudies {
   container "quay.io/fhcrc-microbiome/python-pandas@sha256:39993ba37c44368d1a5752cf6b96f8172e69eb109374722bd6914c29a79565c6"
   cpus 2
   memory "4 GB"
@@ -15,7 +15,7 @@ process fetchHostAssociatedStudies {
   val biome_name from params.biome_name
   
   output:
-  file "list_of_assemblies.txt" into list_of_assemblies
+  file "page.*.txt" into list_of_urls
 
   """
 #!/usr/bin/python3
@@ -35,54 +35,73 @@ def parse_json(d, key_list):
     return d
 
 
-def get_all(url, item=["data"], next_key=["links", "next"], n=None):
-    ix = 1
-    total_set = []
-    d = get(url)
-    total_set.extend(parse_json(d, item))
-
-    while parse_json(d, next_key) is not None:
-        if n is not None and ix == n:
-            break
-        d = get(parse_json(d, next_key))
-        total_set.extend(parse_json(d, item))
-        ix += 1
-
-    return total_set
-
-
-# GET ALL HOST ASSOCIATED STUDIES
-assembly_list = get_all(
-    "https://www.ebi.ac.uk/metagenomics/api/v1/assemblies?lineage=root%3A${biome_name}&page=1"
+# Get the first page of assemblies
+d = get(
+    "https://www.ebi.ac.uk/metagenomics/api/v1/assemblies?lineage=root%3A${biome_name}"
 )
 
-print("Fetched a total of " + str(len(assembly_list)) + " ${biome_name} assemblies")
+# Figure out how many pages there are
+n_pages = parse_json(d, ["meta", "pagination", "pages"])
 
-open("list_of_assemblies.txt", "wt").write("\\n".join([
-    parse_json(assembly, ["relationships", "analyses", "links", "related"])
-    for assembly in assembly_list
-]))
+print("There are a total of " + str(n_pages) + " pages of ${biome_name} assemblies")
+
+for ix in range(1, n_pages + 1):
+    with open("page." + str(ix) + ".txt", "wt") as fo:
+        fo.write("https://www.ebi.ac.uk/metagenomics/api/v1/assemblies?lineage=root%3A${biome_name}&page=" + str(ix))
 
   """
 
 }
 
 
-// Break up the list of assemblies
-process splitAssemblyList {
-    container "ubuntu:16.04"
-    cpus 1
-    memory "1 GB"
+// Fetch the list of host-associated studies from ENA
+process fetchHostAssociatedStudies {
+  container "quay.io/fhcrc-microbiome/python-pandas@sha256:39993ba37c44368d1a5752cf6b96f8172e69eb109374722bd6914c29a79565c6"
+  cpus 1
+  memory "1 GB"
+//   errorStrategy 'retry'
+  
+  input:
+  file url from list_of_urls.flatten()
+  val biome_name from params.biome_name
 
-    input:
-    file list_of_assemblies
+  output:
+  file "assemblies*" into groups_of_assemblies
 
-    output:
-    file "*" into groups_of_assemblies
+  """
+#!/usr/bin/python3
 
-    """
-    split -l 10 ${list_of_assemblies}
-    """
+import requests
+
+
+def get(url):
+    r = requests.get(url)
+    return r.json()
+
+
+def parse_json(d, key_list):
+    for k in key_list:
+        assert k in d, (k, d.keys())
+        d = d[k]
+    return d
+
+
+# Get the page to read in this process
+with open("${url}", "rt") as f:
+    page_url = f.readline().strip()
+
+# Get the host-associated assemblies from this page
+assembly_list = get(page_url)
+
+print("Fetched " + str(len(assembly_list)) + " ${biome_name} assemblies")
+
+open("assemblies.${url}", "wt").write("\\n".join([
+    parse_json(assembly, ["relationships", "analyses", "links", "related"])
+    for assembly in assembly_list["data"]
+]))
+
+  """
+
 }
 
 
