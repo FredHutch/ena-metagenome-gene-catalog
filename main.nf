@@ -209,8 +209,8 @@ for assembly_url in open("${assembly_url_list}").readlines():
 // Combine 100% identical sequences
 process deduplicateCDS {
     container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
-    cpus 2
-    memory "4 GB"
+    cpus 4
+    memory "32 GB"
     errorStrategy 'retry'
 
     input:
