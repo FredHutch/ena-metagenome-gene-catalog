@@ -79,6 +79,7 @@ process fetchHostAssociatedStudies {
 #!/usr/bin/python3
 
 import requests
+import time
 
 
 def get(url, attempts=5, delay=60):
@@ -136,6 +137,7 @@ process fetchCDS {
 
 import os
 import requests
+import time
 
 
 def get(url, attempts=5, delay=60):
