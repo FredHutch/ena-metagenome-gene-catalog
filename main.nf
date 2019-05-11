@@ -132,6 +132,8 @@ process fetchCDS {
   output:
   file "*.faa.gz" into cds_ch
 
+  afterScript "rm -r *"
+
   """
 #!/usr/bin/python3
 
@@ -219,6 +221,8 @@ process deduplicateCDS {
     output:
     file "*.dedup.fasta.gz" into dedup_ch
 
+    afterScript "rm -r *"
+
     """
 #!/bin/bash
 
@@ -258,6 +262,8 @@ process combineCDS {
     output:
     file "all_CDS.faa.gz" into all_cds
 
+    afterScript "rm -r *"
+
     """
 set -e
 
@@ -268,8 +274,8 @@ gzip -t all_CDS.faa.gz
 
 process clusterCDS {
     container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
-    cpus 4
-    memory "8 GB"
+    cpus 16
+    memory "120 GB"
     publishDir "${params.output_folder}"
     errorStrategy 'retry'
     
@@ -281,6 +287,8 @@ process clusterCDS {
     output:
     file "mmseqs.${min_identity}.tsv.gz"
     file "mmseqs.${min_identity}.rep.fasta.gz"
+
+    afterScript "rm -r *"
 
     """
 #!/bin/bash
