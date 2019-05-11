@@ -183,6 +183,8 @@ def download_file(file_url, filename):
     with open(filename, 'wb') as fo:
         fo.write(r.content)
 
+all_filenames = set([])
+
 for assembly_url in open("${assembly_url_list}").readlines():
     assembly_url = assembly_url.strip()
     print("Processing " + assembly_url)
@@ -201,7 +203,12 @@ for assembly_url in open("${assembly_url_list}").readlines():
                 # Format the filename by the analysis' unique ID
                 filename = analysis_id + ".CDS.unannotated.faa.gz"
 
-                download_file(faa_url, filename)
+                # Make sure this file hasn't been downloaded yet
+                if filename not in all_filenames:
+
+                    download_file(faa_url, filename)
+
+                    all_filenames.add(filename)
 
   """
 
