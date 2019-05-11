@@ -175,9 +175,9 @@ def get_all(url, item=["data"], next_key=["links", "next"], n=None):
 
     return total_set
 
-def download_file(file_url):
+def download_file(file_url, filename):
     print("Downloading " + file_url)
-    filename = file_url.split("/")[-1]
+    print("Local destination " + filename)
     assert os.path.exists(filename) is False
     r = requests.get(file_url, allow_redirects=True)
     with open(filename, 'wb') as fo:
@@ -190,6 +190,9 @@ for assembly_url in open("${assembly_url_list}").readlines():
     # Get available analyses
     break_out = False
     for analysis in get_all(assembly_url):
+
+        analysis_id = parse_json(analysis, ["id"])
+
         if break_out:
             break
         download_url = parse_json(analysis, ["relationships", "downloads", "links", "related"])
@@ -197,7 +200,11 @@ for assembly_url in open("${assembly_url_list}").readlines():
         for download in get_all(download_url):
             if parse_json(download, ["attributes", "description", "label"]) == "Predicted CDS without annotation":
                 faa_url = parse_json(download, ["links", "self"])
-                download_file(faa_url)
+
+                # Format the filename by the analysis' unique ID
+                filename = analysis_id + ".CDS.unannotated.faa.gz"
+
+                download_file(faa_url, filename)
                 if break_out:
                     break
 
