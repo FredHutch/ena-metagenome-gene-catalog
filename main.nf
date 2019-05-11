@@ -230,11 +230,11 @@ process deduplicateCDS {
 
 set -e
 
-cat *.faa.gz > batch_cds.faa.gz
+# Set a name for the output
 for x in *.faa.gz; do n=\$x; done
 
 # Make the MMSeqs2 database
-mmseqs createdb batch_cds.faa.gz db
+mmseqs createdb *.faa.gz db
 
 # Cluster the protein sequences
 mmseqs cluster db \$n.${min_identity}.cluster ./ \
