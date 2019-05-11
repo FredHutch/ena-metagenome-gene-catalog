@@ -21,11 +21,18 @@ process pagesHostAssociatedStudies {
 #!/usr/bin/python3
 
 import requests
+import time
 
 
-def get(url):
-    r = requests.get(url)
-    return r.json()
+def get(url, attempts=5, delay=60):
+    i = 0
+    while i < attempts:
+        try:
+            r = requests.get(url)
+            return r.json()
+        except:
+            time.sleep(delay)
+        i += 1
 
 
 def parse_json(d, key_list):
@@ -74,9 +81,15 @@ process fetchHostAssociatedStudies {
 import requests
 
 
-def get(url):
-    r = requests.get(url)
-    return r.json()
+def get(url, attempts=5, delay=60):
+    i = 0
+    while i < attempts:
+        try:
+            r = requests.get(url)
+            return r.json()
+        except:
+            time.sleep(delay)
+        i += 1
 
 
 def parse_json(d, key_list):
@@ -125,9 +138,15 @@ import os
 import requests
 
 
-def get(url):
-    r = requests.get(url)
-    return r.json()
+def get(url, attempts=5, delay=60):
+    i = 0
+    while i < attempts:
+        try:
+            r = requests.get(url)
+            return r.json()
+        except:
+            time.sleep(delay)
+        i += 1
 
 
 def parse_json(d, key_list):
