@@ -215,17 +215,62 @@ for assembly_url in open("${assembly_url_list}").readlines():
 }
 
 
-// Combine 100% identical sequences
-process deduplicateCDS {
+// Combine 100% identical sequences in multiple rounds
+process deduplicateRoundOne {
     container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
     cpus 4
     memory "30 GB"
     errorStrategy 'retry'
 
     input:
-    file "*" from cds_ch
+    file "*" from dedup_one.flatten().collate(5)
     val min_identity from 100
     val min_coverage from 50
+    val round from 1
+    
+    output:
+    file "*.dedup.fasta.gz" into dedup_two
+
+    afterScript "rm -r *"
+
+    script:
+    template "deduplicateCDS.sh"
+}
+
+
+process deduplicateRoundTwo {
+    container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
+    cpus 4
+    memory "30 GB"
+    errorStrategy 'retry'
+
+    input:
+    file "*" from dedup_two.flatten().collate(5)
+    val min_identity from 100
+    val min_coverage from 50
+    val round from 2
+    
+    output:
+    file "*.dedup.fasta.gz" into dedup_three
+
+    afterScript "rm -r *"
+
+    script:
+    template "deduplicateCDS.sh"
+}
+
+
+process deduplicateRoundThree {
+    container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
+    cpus 4
+    memory "30 GB"
+    errorStrategy 'retry'
+
+    input:
+    file "*" from dedup_three.flatten().collate(5)
+    val min_identity from 100
+    val min_coverage from 50
+    val round from 3
     
     output:
     file "*.dedup.fasta.gz" into dedup_ch
