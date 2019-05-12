@@ -130,7 +130,7 @@ process fetchCDS {
   file assembly_url_list from groups_of_assemblies.flatten()
   
   output:
-  file "*.faa.gz" into cds_ch
+  file "*.faa.gz" into dedup_one
 
   afterScript "rm -r *"
 
