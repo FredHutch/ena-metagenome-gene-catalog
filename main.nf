@@ -240,8 +240,8 @@ process deduplicateRoundOne {
 
 process deduplicateRoundTwo {
     container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
-    cpus 4
-    memory "30 GB"
+    cpus 36
+    memory "60 GB"
     errorStrategy 'retry'
 
     input:
@@ -262,8 +262,8 @@ process deduplicateRoundTwo {
 
 process deduplicateRoundThree {
     container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
-    cpus 4
-    memory "30 GB"
+    cpus 36
+    memory "60 GB"
     errorStrategy 'retry'
 
     input:
