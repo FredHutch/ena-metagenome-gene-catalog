@@ -3,7 +3,7 @@
 params.biome_name = "Host-associated"
 params.min_coverage = 50
 params.output_folder = "./"
-min_identity_ch = Channel.from( 100, 90, 80, 70, 60, 50 )
+min_identity_ch = Channel.from( 99, 90, 80, 70, 60, 50 )
 
 // Fetch the number of pages of host-associated studies from ENA
 process pagesHostAssociatedStudies {
@@ -224,7 +224,7 @@ process deduplicateRoundOne {
 
     input:
     file "*" from dedup_one.flatten().collate(5)
-    val min_identity from 100
+    val min_identity from 99
     val min_coverage from 50
     val round from 1
     
@@ -246,7 +246,7 @@ process deduplicateRoundTwo {
 
     input:
     file "*" from dedup_two.flatten().collate(5)
-    val min_identity from 100
+    val min_identity from 99
     val min_coverage from 50
     val round from 2
     
@@ -268,7 +268,7 @@ process deduplicateRoundThree {
 
     input:
     file "*" from dedup_three.flatten().collate(5)
-    val min_identity from 100
+    val min_identity from 99
     val min_coverage from 50
     val round from 3
     
