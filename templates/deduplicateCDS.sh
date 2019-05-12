@@ -3,10 +3,10 @@
 set -e
 
 # Set a name for the output
-for x in *.faa.gz; do n=\$x; done
+for x in *.gz; do n=\$x; done
 
 # Make the MMSeqs2 database
-mmseqs createdb *.faa.gz db
+mmseqs createdb *.gz db
 
 output_name="\$n.${min_identity}.${round}"
 
