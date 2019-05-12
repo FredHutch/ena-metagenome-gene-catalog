@@ -267,7 +267,7 @@ process deduplicateRoundThree {
     errorStrategy 'retry'
 
     input:
-    file "*" from dedup_three.flatten().collate(5)
+    file "*" from dedup_three.flatten().collate(2)
     val min_identity from 99
     val min_coverage from 50
     val round from 3
