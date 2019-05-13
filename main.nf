@@ -218,8 +218,8 @@ for assembly_url in open("${assembly_url_list}").readlines():
 // Combine 100% identical sequences in multiple rounds
 process deduplicateRoundOne {
     container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
-    cpus 4
-    memory "30 GB"
+    cpus 16
+    memory "120 GB"
     errorStrategy 'retry'
 
     input:
@@ -240,8 +240,8 @@ process deduplicateRoundOne {
 
 process deduplicateRoundTwo {
     container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
-    cpus 36
-    memory "60 GB"
+    cpus 16
+    memory "120 GB"
     errorStrategy 'retry'
 
     input:
@@ -262,8 +262,8 @@ process deduplicateRoundTwo {
 
 process deduplicateRoundThree {
     container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
-    cpus 36
-    memory "60 GB"
+    cpus 16
+    memory "120 GB"
     errorStrategy 'retry'
 
     input:
@@ -284,8 +284,8 @@ process deduplicateRoundThree {
 
 process combineCDS {
     container "ubuntu:16.04"
-    cpus 1
-    memory "8 GB"
+    cpus 16
+    memory "120 GB"
     errorStrategy 'retry'
     
     input:
