@@ -3,6 +3,9 @@
 params.biome_name = "Host-associated"
 params.min_coverage = 50
 params.output_folder = "./"
+
+// Minimum amino acid length for any CDS
+params.min_length = 50
 min_identity_ch = Channel.from( 99, 90, 80, 70, 60, 50 )
 
 // Fetch the number of pages of host-associated studies from ENA
@@ -130,7 +133,7 @@ process fetchCDS {
   file assembly_url_list from groups_of_assemblies.flatten()
   
   output:
-  file "*.faa.gz" into dedup_one
+  file "*.faa.gz" into filter_length
 
   afterScript "rm -r *"
 
@@ -214,6 +217,38 @@ for assembly_url in open("${assembly_url_list}").readlines():
 
 }
 
+// Combine 100% identical sequences in multiple rounds
+process filterLength {
+    container "quay.io/biocontainers/biopython@sha256:1196016b05927094af161ccf2cd8371aafc2e3a8daa51c51ff023f5eb45a820f"
+    cpus 1
+    memory "4 GB"
+    errorStrategy 'retry'
+
+    input:
+    file fasta from filter_length.flatten()
+    val min_length from params.min_length
+    
+    output:
+    file "${fasta}.filtered.fasta.gz" into dedup_one
+
+    afterScript "rm -r *"
+
+    """
+#!/usr/bin/env python3
+import gzip
+from Bio.SeqIO.FastaIO import SimpleFastaParser
+
+min_length = int("${min_length}")
+
+with gzip.open("${fasta}", "rt") as fi, gzip.open("${fasta}.filtered.fasta.gz", "wt") as fo:
+    for header, seq in SimpleFastaParser:
+        if len(seq) >= min_length:
+            header = header.split(" ")[0].split("\\t")[0]
+            fo.write(">" + header + "\\n" + seq + "\\n")
+
+    """
+}
+
 
 // Combine 100% identical sequences in multiple rounds
 process deduplicateRoundOne {
@@ -251,36 +286,13 @@ process deduplicateRoundTwo {
     val round from 2
     
     output:
-    file "*.dedup.fasta.gz" into dedup_three
+    file "*.dedup.fasta.gz" into combine_cds
 
     afterScript "rm -r *"
 
     script:
     template "deduplicateCDS.sh"
 }
-
-
-process deduplicateRoundThree {
-    container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
-    cpus 16
-    memory "120 GB"
-    errorStrategy 'retry'
-
-    input:
-    file "*" from dedup_three.toSortedList().flatten().collate(5)
-    val min_identity from 99
-    val min_coverage from 50
-    val round from 3
-    
-    output:
-    file "*.dedup.fasta.gz" into dedup_ch
-
-    afterScript "rm -r *"
-
-    script:
-    template "deduplicateCDS.sh"
-}
-
 
 process combineCDS {
     container "ubuntu:16.04"
@@ -289,7 +301,7 @@ process combineCDS {
     errorStrategy 'retry'
     
     input:
-    file "*" from dedup_ch.collect()
+    file "*" from combine_cds.collect()
     
     output:
     file "all_CDS.faa.gz" into all_cds
