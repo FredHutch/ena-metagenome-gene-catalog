@@ -223,7 +223,7 @@ process deduplicateRoundOne {
     errorStrategy 'retry'
 
     input:
-    file "*" from dedup_one.flatten().collate(5)
+    file "*" from dedup_one.toSortedList().flatten().collate(5)
     val min_identity from 99
     val min_coverage from 50
     val round from 1
@@ -245,7 +245,7 @@ process deduplicateRoundTwo {
     errorStrategy 'retry'
 
     input:
-    file "*" from dedup_two.flatten().collate(5)
+    file "*" from dedup_two.toSortedList().flatten().collate(5)
     val min_identity from 99
     val min_coverage from 50
     val round from 2
@@ -267,7 +267,7 @@ process deduplicateRoundThree {
     errorStrategy 'retry'
 
     input:
-    file "*" from dedup_three.flatten().collate(5)
+    file "*" from dedup_three.toSortedList().flatten().collate(5)
     val min_identity from 99
     val min_coverage from 50
     val round from 3
