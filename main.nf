@@ -134,7 +134,7 @@ process fetchCDS {
   file assembly_url_list from groups_of_assemblies.flatten()
   
   output:
-  file "*.faa.gz" into filter_length
+  file "*.fasta.gz" into filter_length
 
   afterScript "rm -r *"
 
