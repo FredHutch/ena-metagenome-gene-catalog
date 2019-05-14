@@ -126,7 +126,7 @@ open("assemblies.${url}", "wt").write("\\n".join([
 // Download the CDS per assembly
 process fetchCDS {
   container "quay.io/fhcrc-microbiome/python-pandas@sha256:39993ba37c44368d1a5752cf6b96f8172e69eb109374722bd6914c29a79565c6"
-  cpus 1
+  cpus 4
   memory "8 GB"
   errorStrategy 'retry'
   
