@@ -230,7 +230,7 @@ process filterLength {
     val min_length from params.min_length
     
     output:
-    file "${fasta}.filtered.fasta.gz" into dedup_one
+    file "${fasta}.filtered.fasta.gz" into combine_cds
 
     afterScript "rm -r *"
 
@@ -256,49 +256,49 @@ with gzip.open("${fasta}", "rt") as fi, gzip.open(sample_name + ".filtered.fasta
 }
 
 
-// Combine 100% identical sequences in multiple rounds
-process deduplicateRoundOne {
-    container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
-    cpus 16
-    memory "120 GB"
-    errorStrategy 'retry'
+// // Combine 100% identical sequences in multiple rounds
+// process deduplicateRoundOne {
+//     container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
+//     cpus 16
+//     memory "120 GB"
+//     errorStrategy 'retry'
 
-    input:
-    file "*" from dedup_one.toSortedList().flatten().collate(5)
-    val min_identity from 99
-    val min_coverage from 50
-    val round from 1
+//     input:
+//     file "*" from dedup_one.toSortedList().flatten().collate(5)
+//     val min_identity from 99
+//     val min_coverage from 50
+//     val round from 1
     
-    output:
-    file "*.dedup.fasta.gz" into dedup_two
+//     output:
+//     file "*.dedup.fasta.gz" into dedup_two
 
-    afterScript "rm -r *"
+//     afterScript "rm -r *"
 
-    script:
-    template "deduplicateCDS.sh"
-}
+//     script:
+//     template "deduplicateCDS.sh"
+// }
 
 
-process deduplicateRoundTwo {
-    container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
-    cpus 16
-    memory "120 GB"
-    errorStrategy 'retry'
+// process deduplicateRoundTwo {
+//     container "quay.io/fhcrc-microbiome/integrate-metagenomic-assemblies:v0.5"
+//     cpus 16
+//     memory "120 GB"
+//     errorStrategy 'retry'
 
-    input:
-    file "*" from dedup_two.toSortedList().flatten().collate(5)
-    val min_identity from 99
-    val min_coverage from 50
-    val round from 2
+//     input:
+//     file "*" from dedup_two.toSortedList().flatten().collate(5)
+//     val min_identity from 99
+//     val min_coverage from 50
+//     val round from 2
     
-    output:
-    file "*.dedup.fasta.gz" into combine_cds
+//     output:
+//     file "*.dedup.fasta.gz" into combine_cds
 
-    afterScript "rm -r *"
+//     afterScript "rm -r *"
 
-    script:
-    template "deduplicateCDS.sh"
-}
+//     script:
+//     template "deduplicateCDS.sh"
+// }
 
 process combineCDS {
     container "ubuntu:16.04"
