@@ -311,15 +311,15 @@ process combineCDS {
     file "*" from combine_cds.collect()
     
     output:
-    file "all_CDS.faa.gz" into all_cds
+    file "all_CDS.fasta.gz" into all_cds
 
     afterScript "rm -r *"
 
     """
 set -e
 
-cat *faa.gz > all_CDS.faa.gz
-gzip -t all_CDS.faa.gz
+cat *fasta.gz > all_CDS.fasta.gz
+gzip -t all_CDS.fasta.gz
     """
 }
 
