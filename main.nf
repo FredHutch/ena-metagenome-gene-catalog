@@ -245,7 +245,7 @@ min_length = int("${min_length}")
 sample_name = "${fasta}".split(".")[0]
 ix = 1
 
-with gzip.open("${fasta}", "rt") as fi, gzip.open("${fasta}.filtered.fasta.gz", "wt") as fo:
+with gzip.open("${fasta}", "rt") as fi, gzip.open(sample_name + ".filtered.fasta.gz", "wt") as fo:
     for header, seq in SimpleFastaParser(fi):
         if len(seq) >= min_length:
             header = header.split(" ")[0].split("\\t")[0]
