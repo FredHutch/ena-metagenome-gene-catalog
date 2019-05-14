@@ -227,7 +227,7 @@ process filterLength {
     errorStrategy 'retry'
 
     input:
-    file fasta from filter_length.flatten()
+    file fasta from filter_length.flatten().take(200)
     val min_length from params.min_length
     
     output:
