@@ -267,7 +267,7 @@ process deduplicateRoundThree {
     errorStrategy 'retry'
 
     input:
-    file "*" from dedup_three.flatten().collate(2)
+    file "*" from dedup_three.flatten().collate(5)
     val min_identity from 99
     val min_coverage from 50
     val round from 3
@@ -331,7 +331,7 @@ set -e
 mmseqs createdb ${all_cds} db
 
 # Cluster the protein sequences
-mmseqs cluster db mmseqs.${min_identity}.cluster ./ \
+mmseqs linclust db mmseqs.${min_identity}.cluster ./ \
     --min-seq-id ${min_identity / 100} \
     --max-seqs 100000 \
     -c ${min_coverage / 100}
