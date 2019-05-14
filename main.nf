@@ -250,7 +250,7 @@ with gzip.open("${fasta}", "rt") as fi, gzip.open(sample_name + ".filtered.fasta
     for header, seq in SimpleFastaParser(fi):
         if len(seq) >= min_length:
             header = header.split(" ")[0].split("\\t")[0]
-            fo.write(">" + sample_name + "_" + str(ix) + "\\n" + seq + "\\n")
+            fo.write(">" + sample_name + "." + str(ix) + "\\n" + seq + "\\n")
             ix += 1
 
     """
