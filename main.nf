@@ -231,7 +231,7 @@ process filterLength {
     val min_length from params.min_length
     
     output:
-    file "${fasta}.filtered.fasta.gz" into combine_cds
+    file "*.filtered.fasta.gz" into combine_cds
 
     afterScript "rm -r *"
 
