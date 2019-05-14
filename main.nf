@@ -417,7 +417,7 @@ for min_prevalence in "${min_prevalence}".split(","):
             cluster_size[cluster_name].add(sample_name)
 
     # Now filter the FASTA
-    fpo = "mmseqs.${min_identity}.${min_prevalence}.rep.fasta.gz"
+    fpo = "mmseqs.${min_identity}." + min_prevalence + ".rep.fasta.gz"
     with gzip.open("${cluster_fasta}", "rt") as fi, gzip.open(fpo, "wt") as fo:
         for header, seq in SimpleFastaParser(fi):
             if len(cluster_size[header]) >= min_prevalence:
