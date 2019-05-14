@@ -3,11 +3,11 @@
 params.biome_name = "Host-associated"
 params.min_coverage = 50
 params.output_folder = "./"
+params.min_prevalence = '1,5,10,20,100'
 
 // Minimum amino acid length for any CDS
 params.min_length = 50
 min_identity_ch = Channel.from( 99, 90, 80, 70, 60, 50 )
-min_prevalence_ch = Channel.from( 1, 5, 10, 20, 100 )
 
 // Fetch the number of pages of host-associated studies from ENA
 process pagesHostAssociatedStudies {
@@ -379,10 +379,10 @@ process prevalentCDS {
     
     input:
     set min_identity, file(cluster_tsv), file(cluster_fasta) from prevalent_cds
-    val min_prevalence from min_prevalence_ch
+    val min_prevalence from params.min_prevalence
     
     output:
-    file "mmseqs.${min_identity}.${min_prevalence}.rep.fasta.gz"
+    file "*"
 
     afterScript "rm -r *"
 
@@ -391,36 +391,37 @@ process prevalentCDS {
 import gzip
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
-min_prevalence = int("${min_prevalence}")
+for min_prevalence in "${min_prevalence}".split(","):
+    min_prevalence = int(min_prevalence)
 
-# Keep track of the size of each cluster
-cluster_size = dict()
+    # Keep track of the size of each cluster
+    cluster_size = dict()
 
-# Read in the cluster TSV
-print("Reading in ${cluster_tsv}")
-with gzip.open("${cluster_tsv}", "rt") as f:
-    ix = 0
-    for line in f:
-        if ix % 1000 == 0:
-            print("Processed " + str(ix) + " lines")
+    # Read in the cluster TSV
+    print("Reading in ${cluster_tsv}")
+    with gzip.open("${cluster_tsv}", "rt") as f:
+        ix = 0
+        for line in f:
+            if ix % 1000 == 0:
+                print("Processed " + str(ix) + " lines")
 
-        cluster_name, member_name = line.rstrip().split("\\t")
+            cluster_name, member_name = line.rstrip().split("\\t")
 
-        # Parse the sample name from the member
-        sample_name = member_name.split(".")[0]
+            # Parse the sample name from the member
+            sample_name = member_name.split(".")[0]
 
-        # Initialize `cluster_size` with a set
-        cluster_size[cluster_name] = cluster_size.get(cluster_name, set([]))
-        
-        # Add the sample name that this cluster was observed within
-        cluster_size[cluster_name].add(sample_name)
+            # Initialize `cluster_size` with a set
+            cluster_size[cluster_name] = cluster_size.get(cluster_name, set([]))
+            
+            # Add the sample name that this cluster was observed within
+            cluster_size[cluster_name].add(sample_name)
 
-# Now filter the FASTA
-fpo = "mmseqs.${min_identity}.${min_prevalence}.rep.fasta.gz"
-with gzip.open("${cluster_fasta}", "rt") as fi, gzip.open(fpo, "wt") as fo:
-    for header, seq in SimpleFastaParser(fi):
-        if len(cluster_size[header]) >= min_prevalence:
-            fo.write(">" + header + "\\n" + seq + "\\n")
+    # Now filter the FASTA
+    fpo = "mmseqs.${min_identity}.${min_prevalence}.rep.fasta.gz"
+    with gzip.open("${cluster_fasta}", "rt") as fi, gzip.open(fpo, "wt") as fo:
+        for header, seq in SimpleFastaParser(fi):
+            if len(cluster_size[header]) >= min_prevalence:
+                fo.write(">" + header + "\\n" + seq + "\\n")
 
     """
 }
