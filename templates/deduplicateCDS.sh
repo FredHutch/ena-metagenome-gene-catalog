@@ -11,7 +11,7 @@ mmseqs createdb *.gz db
 output_name="\$n.${min_identity}.${round}"
 
 # Cluster the protein sequences
-mmseqs cluster db \$output_name.cluster ./ \
+mmseqs linclust db \$output_name.cluster ./ \
     --min-seq-id ${min_identity / 100} \
     --max-seqs 100000 \
     -c ${min_coverage / 100}
