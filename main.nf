@@ -205,7 +205,7 @@ for assembly_url in open("${assembly_url_list}").readlines():
                 faa_url = parse_json(download, ["links", "self"])
 
                 # Format the filename by the analysis' unique ID
-                filename = analysis_id + ".CDS.unannotated.faa.gz"
+                filename = analysis_id + ".fasta.gz"
 
                 # Make sure this file hasn't been downloaded yet
                 if filename not in all_filenames:
@@ -243,7 +243,7 @@ from Bio.SeqIO.FastaIO import SimpleFastaParser
 min_length = int("${min_length}")
 
 # Name the FASTA record according to the sample name
-sample_name = "${fasta}".split(".")[0]
+sample_name = "${fasta}".replace(".fasta.gz", "")
 ix = 1
 
 with gzip.open("${fasta}", "rt") as fi, gzip.open(sample_name + ".filtered.fasta.gz", "wt") as fo:
