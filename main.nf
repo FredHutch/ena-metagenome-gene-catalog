@@ -404,16 +404,22 @@ with gzip.open("${cluster_tsv}", "rt") as f:
         if ix % 1000 == 0:
             print("Processed " + str(ix) + " lines")
 
-        cluster_name, _ = line.rstrip().split("\\t")
+        cluster_name, member_name = line.rstrip().split("\\t")
+
+        # Parse the sample name from the member
+        sample_name = member_name.split(".")[0]
+
+        # Initialize `cluster_size` with a set
+        cluster_size[cluster_name] = cluster_size.get(cluster_name, set([]))
         
-        # Increment the counter
-        cluster_size[cluster_name] = cluster_size.get(cluster_name, 0) + 1
+        # Add the sample name that this cluster was observed within
+        cluster_size[cluster_name].add(sample_name)
 
 # Now filter the FASTA
 fpo = "mmseqs.${min_identity}.${min_prevalence}.rep.fasta.gz"
 with gzip.open("${cluster_fasta}", "rt") as fi, gzip.open(fpo) as fo:
     for header, seq in SimpleFastaParser(fi):
-        if cluster_size[header] >= min_prevalence:
+        if len(cluster_size[header]) >= min_prevalence:
             fo.write(">" + header + "\\n" + seq + "\\n")
 
     """
