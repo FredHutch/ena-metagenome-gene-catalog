@@ -217,15 +217,15 @@ for assembly_url in open("${assembly_url_list}").readlines():
 
 }
 
-// Combine 100% identical sequences in multiple rounds
+// Filter out sequences that are less than params.min_length
 process filterLength {
     container "quay.io/biocontainers/biopython@sha256:1196016b05927094af161ccf2cd8371aafc2e3a8daa51c51ff023f5eb45a820f"
     cpus 1
     memory "4 GB"
-    errorStrategy 'retry'
+    // errorStrategy 'retry'
 
     input:
-    file fasta from filter_length.flatten()
+    file fasta from filter_length.flatten().take(100)
     val min_length from params.min_length
     
     output:
