@@ -241,7 +241,7 @@ from Bio.SeqIO.FastaIO import SimpleFastaParser
 min_length = int("${min_length}")
 
 with gzip.open("${fasta}", "rt") as fi, gzip.open("${fasta}.filtered.fasta.gz", "wt") as fo:
-    for header, seq in SimpleFastaParser:
+    for header, seq in SimpleFastaParser(fi):
         if len(seq) >= min_length:
             header = header.split(" ")[0].split("\\t")[0]
             fo.write(">" + header + "\\n" + seq + "\\n")
