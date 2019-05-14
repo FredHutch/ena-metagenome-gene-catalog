@@ -7,6 +7,7 @@ params.output_folder = "./"
 // Minimum amino acid length for any CDS
 params.min_length = 50
 min_identity_ch = Channel.from( 99, 90, 80, 70, 60, 50 )
+min_prevalence_ch = Channel.from( 1, 5, 10, 20, 100 )
 
 // Fetch the number of pages of host-associated studies from ENA
 process pagesHostAssociatedStudies {
@@ -335,8 +336,8 @@ process clusterCDS {
     val min_coverage from params.min_coverage
     
     output:
-    file "mmseqs.${min_identity}.tsv.gz"
-    file "mmseqs.${min_identity}.rep.fasta.gz"
+    set min_identity, file("mmseqs.${min_identity}.tsv.gz"), file("mmseqs.${min_identity}.rep.fasta.gz") into prevalent_cds
+    
 
     afterScript "rm -r *"
 
@@ -363,6 +364,57 @@ mmseqs result2flat db db mmseqs.${min_identity}.rep mmseqs.${min_identity}.rep.f
 
 gzip mmseqs.${min_identity}.tsv
 gzip mmseqs.${min_identity}.rep.fasta
+
+    """
+}
+
+
+// Filter CDS based on their prevalence, the number of samples each centroid is found in
+process prevalentCDS {
+    container "quay.io/biocontainers/biopython@sha256:1196016b05927094af161ccf2cd8371aafc2e3a8daa51c51ff023f5eb45a820f"
+    cpus 16
+    memory "120 GB"
+    publishDir "${params.output_folder}"
+    errorStrategy 'retry'
+    
+    input:
+    set min_identity, file(cluster_tsv), file(cluster_fasta) from prevalent_cds
+    val min_prevalence from min_prevalence_ch
+    
+    output:
+    file "mmseqs.${min_identity}.${min_prevalence}.rep.fasta.gz"
+
+    afterScript "rm -r *"
+
+    """
+#!/usr/bin/env python3
+import gzip
+from Bio.SeqIO.FastaIO import SimpleFastaParser
+
+min_prevalence = int("${min_prevalence}")
+
+# Keep track of the size of each cluster
+cluster_size = dict()
+
+# Read in the cluster TSV
+print("Reading in ${cluster_tsv}")
+with gzip.open("${cluster_tsv}", "rt") as f:
+    ix = 0
+    for line in f:
+        if ix % 1000 == 0:
+            print("Processed " + str(ix) + " lines")
+
+        cluster_name, _ = line.rstrip().split("\\t")
+        
+        # Increment the counter
+        cluster_size[cluster_name] = cluster_size.get(cluster_name, 0) + 1
+
+# Now filter the FASTA
+fpo = "mmseqs.${min_identity}.${min_prevalence}.rep.fasta.gz"
+with gzip.open("${cluster_fasta}", "rt") as fi, gzip.open(fpo) as fo:
+    for header, seq in SimpleFastaParser(fi):
+        if cluster_size[header] >= min_prevalence:
+            fo.write(">" + header + "\\n" + seq + "\\n")
 
     """
 }
