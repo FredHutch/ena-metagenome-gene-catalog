@@ -346,30 +346,30 @@ process prevalentCDS {
 import gzip
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
+# Keep track of the size of each cluster
+cluster_size = dict()
+
+# Read in the cluster TSV
+print("Reading in ${cluster_tsv}")
+with gzip.open("${cluster_tsv}", "rt") as f:
+    ix = 0
+    for line in f:
+        if ix % 1000 == 0:
+            print("Processed " + str(ix) + " lines")
+
+        cluster_name, member_name = line.rstrip().split("\\t")
+
+        # Parse the sample name from the member
+        sample_name = member_name.split(".")[0]
+
+        # Initialize `cluster_size` with a set
+        cluster_size[cluster_name] = cluster_size.get(cluster_name, set([]))
+        
+        # Add the sample name that this cluster was observed within
+        cluster_size[cluster_name].add(sample_name)
+
 for min_prevalence in "${min_prevalence}".split(","):
     min_prevalence = int(min_prevalence)
-
-    # Keep track of the size of each cluster
-    cluster_size = dict()
-
-    # Read in the cluster TSV
-    print("Reading in ${cluster_tsv}")
-    with gzip.open("${cluster_tsv}", "rt") as f:
-        ix = 0
-        for line in f:
-            if ix % 1000 == 0:
-                print("Processed " + str(ix) + " lines")
-
-            cluster_name, member_name = line.rstrip().split("\\t")
-
-            # Parse the sample name from the member
-            sample_name = member_name.split(".")[0]
-
-            # Initialize `cluster_size` with a set
-            cluster_size[cluster_name] = cluster_size.get(cluster_name, set([]))
-            
-            # Add the sample name that this cluster was observed within
-            cluster_size[cluster_name].add(sample_name)
 
     # Now filter the FASTA
     fpo = "mmseqs.${min_identity}." + min_prevalence + ".rep.fasta.gz"
