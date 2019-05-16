@@ -346,8 +346,11 @@ process prevalentCDS {
 import gzip
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
-# Keep track of the size of each cluster
+# Keep track of the size of (number of SAMPLES found within) each cluster
 cluster_size = dict()
+
+# Keep track of the number of individual sequences in each cluster
+cluster_size_raw = dict()
 
 # Read in the cluster TSV
 print("Reading in ${cluster_tsv}")
@@ -369,6 +372,18 @@ with gzip.open("${cluster_tsv}", "rt") as f:
         # Add the sample name that this cluster was observed within
         cluster_size[cluster_name].add(sample_name)
 
+        # Record the number of raw sequences for this cluster
+        cluster_size_raw[cluster_name] = cluster_size_raw.get(cluster_name, 0) + 1
+
+# Write out the size (number of samples and individual records) for each cluster
+print("Writing out the size of each cluster")
+with gzip.open("mmseqs.${min_identity}.cluster_size.csv.gz", "wt") as fo:
+    fo.write("cluster,n_samples,n_sequences\\n")
+    for cluster, n_samples in cluster_size.items():
+        n_seqs = cluster_size_raw[cluster]
+        fo.write(",".join([cluster, str(n_samples), str(n_seqs)]) + "\\n")
+
+print("Writing out filtered sequences")
 for min_prevalence in "${min_prevalence}".split(","):
     min_prevalence = int(min_prevalence)
 
