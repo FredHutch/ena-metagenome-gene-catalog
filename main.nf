@@ -356,6 +356,7 @@ with gzip.open("${cluster_tsv}", "rt") as f:
     for line in f:
         if ix % 1000 == 0:
             print("Processed " + str(ix) + " lines")
+        ix += 1
 
         cluster_name, member_name = line.rstrip().split("\\t")
 
